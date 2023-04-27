@@ -1,4 +1,5 @@
 {
     "ignoreUnresolved": ["virtual:pwa-register"],
-    "ignoreUnimported": ["src/test-globals.ts"]
+    "ignoreUnimported": ["src/test-globals.ts", "src/redux/slice/utils/sliceTools.ts", "src/utils/downloadData.ts", "src/utils/idb.ts", "src/utils/localStorage.ts", "src/utils/uploadData.ts"],
+    "ignoreUnused": ["localforage"]
 }

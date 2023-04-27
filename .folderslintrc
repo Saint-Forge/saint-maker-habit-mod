@@ -9,7 +9,7 @@
       "redux",
       "redux/slice",
       "redux/slice/utils",
-      "tests",
-      "utils"
+      "tests/*",
+      "utils/*"
     ]
 }

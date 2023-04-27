@@ -1,19 +1,15 @@
+
 {
-  "root": "src", 
-  "rules": [
-    "components/*",
-    "constants",
-    "hooks",
-    "mods",
-    "pages/*",
-    "redux",
-    "redux/slice",
-    "redux/slice/utils",
-    "styles",
-    "tests",
-    "tests/utils",
-    "tests/utils/habits",
-    "utils",
-    "utils/habits"
-   ]
+    "root": "src",
+    "rules": [
+      "components/*",
+      "constants",
+      "mods",
+      "pages/*",
+      "redux",
+      "redux/slice",
+      "redux/slice/utils",
+      "tests",
+      "utils"
+    ]
 }

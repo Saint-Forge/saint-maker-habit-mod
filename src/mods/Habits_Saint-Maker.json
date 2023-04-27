@@ -1,9 +1,0 @@
-{
-    "id": "p_ZWA-iUSiMmeeAF",
-    "name": "Habits",
-    "isNative": true,
-    "path": "/habits",
-    "description":
-        "A basic habit tracker. Allows you to store 4 weeks of history on an unlimited amount of daily habits.",
-    "issuesPageLink": "https://github.com/Saint-Maker/prayer-book-template-a/issues/new"
-}

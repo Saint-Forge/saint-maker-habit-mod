@@ -1,8 +1,0 @@
-.quill {
-    width: 100%;
-}
-
-.quill > .ql-container > .ql-editor.ql-blank::before {
-    color: rgba(255, 255, 255, 0.24);
-    font-style: normal;
-}

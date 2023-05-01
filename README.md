@@ -16,6 +16,7 @@ V1: Stores 4 weeks of data for unlimited daily habits
 
 5/1/23
 - update readme
+- implement react testing library
 
 Backlog
 - ensure that past habit data (when a habit is made) is not marked in red

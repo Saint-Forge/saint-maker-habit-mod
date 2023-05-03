@@ -61,6 +61,7 @@ export const Habit = ({ habit }: HabitProps) => {
                                 {habit.editing ? (
                                     <Input
                                         type="text"
+                                        data-testid="habit-title-input"
                                         placeholder="Edit habits current name"
                                         value={updatedName}
                                         onChange={handleNameUpdate}
@@ -75,7 +76,7 @@ export const Habit = ({ habit }: HabitProps) => {
                                     ml="2"
                                     colorScheme={habit.editing ? 'green' : 'gray'}
                                     onClick={() => toggleEditing(habit.id, habit.name)}
-                                    aria-label="Add prayer"
+                                    aria-label="Edit Habit"
                                     icon={<BsPencil />}
                                 />
                             </Flex>

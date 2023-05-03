@@ -86,11 +86,11 @@ export const App = () => {
                     }
                 >
                     <Flex direction="row" pt="2">
-                        <Input placeholder="Add a new habit" ref={addInputRef} />
+                        <Input data-testid="new-habit-title-input" placeholder="Add a new habit" ref={addInputRef} />
                         <IconButton
                             ml="2"
                             onClick={addHabitHandler}
-                            aria-label="Add prayer"
+                            aria-label="Add Habit"
                             icon={<AiOutlinePlusCircle />}
                         />
                     </Flex>

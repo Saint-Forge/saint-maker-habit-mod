@@ -1,11 +1,12 @@
-/* eslint-disable etc/no-commented-out-code */
+import { configureStore } from '@reduxjs/toolkit'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { Provider } from 'react-redux'
 import { BrowserRouter } from 'react-router-dom'
 import { describe, expect, it } from 'vitest'
+import localforage from 'localforage'
 
 import { App } from '~pages/App'
-import { store } from '~store'
+import { slices } from '~slices/index'
 
 const createHabit = async (habitTitle: string) => {
     expect(screen.getByText('Habits')).toBeInTheDocument()
@@ -15,13 +16,31 @@ const createHabit = async (habitTitle: string) => {
 }
 
 describe('Habit App tests', () => {
+    const storeRef = setupTestStore()
+
+    function setupTestStore() {
+        const refObj: any = {}
+
+        beforeEach(() => {
+            localforage.clear()
+            const store = configureStore({
+                reducer: slices,
+            })
+            refObj.store = store
+            refObj.wrapper = function Wrapper({ children }: any) {
+                return (
+                    <BrowserRouter>
+                        <Provider store={store}>{children}</Provider>
+                    </BrowserRouter>
+                )
+            }
+        })
+
+        return refObj
+    }
+
     const arrangeComponent = () => {
-        render(
-            <Provider store={store}>
-                <App />
-            </Provider>,
-            { wrapper: BrowserRouter },
-        )
+        render(<App />, { wrapper: storeRef.wrapper })
     }
 
     it('Renders Habit App?', () => {
@@ -32,8 +51,8 @@ describe('Habit App tests', () => {
 
     it('Can create Habit?', async () => {
         arrangeComponent()
-        const habitTitle = 'exercise'
 
+        const habitTitle = 'exercise'
         createHabit(habitTitle)
         await waitFor(() => expect(screen.getByText(habitTitle)).toBeInTheDocument())
     })
@@ -57,9 +76,13 @@ describe('Habit App tests', () => {
     it('Can delete habit?', async () => {
         arrangeComponent()
 
+        const habitTitle = 'exercise'
+        createHabit(habitTitle)
+        await waitFor(() => expect(screen.getByText(habitTitle)).toBeInTheDocument())
+
         fireEvent.click(screen.getAllByLabelText('Edit Habit')[0])
         await waitFor(() => expect(screen.getByText('Delete')).toBeInTheDocument())
         fireEvent.click(screen.getByText('Delete'))
-        await waitFor(() => expect(screen.queryByText('weightlifting')).not.toBeInTheDocument())
+        await waitFor(() => expect(screen.queryByText('exercise')).not.toBeInTheDocument())
     })
 })

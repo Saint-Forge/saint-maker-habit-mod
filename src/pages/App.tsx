@@ -1,6 +1,6 @@
 import { Box, Button, Flex, IconButton, Input, useDisclosure } from '@chakra-ui/react'
 import { nanoid } from 'nanoid'
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { AiOutlinePlusCircle } from 'react-icons/ai'
 import { useDispatch, useSelector } from 'react-redux'
 import { BsUpload, BsDownload } from 'react-icons/bs'
@@ -12,6 +12,7 @@ import { downloadData } from '~utils/downloadData'
 import { uploadData } from '~utils/uploadData'
 import { AlertModal } from '~components/AlertModal'
 import { Habit } from '~components/Habit'
+import { GlobalHabitControls } from '~components/GlobalHabitControls'
 
 export const App = () => {
     const { isOpen: isUploadAlertOpen, onOpen: onUploadAlertOpen, onClose: onUploadAlertClose } = useDisclosure()
@@ -24,6 +25,7 @@ export const App = () => {
     const habits = useSelector(selectHabits)
     const addInputRef = useRef<HTMLInputElement | null>(null)
     const fileInputRef = useRef<HTMLInputElement | null>(null)
+    const [weekSelectedOverride, setWeekSelectedOverride] = useState(3)
 
     useEffect(() => {
         dispatch(getHabits())
@@ -93,8 +95,16 @@ export const App = () => {
                             icon={<AiOutlinePlusCircle />}
                         />
                     </Flex>
+                    <GlobalHabitControls
+                        weekSelectedOverride={weekSelectedOverride}
+                        setWeekSelectedOverride={setWeekSelectedOverride}
+                    />
                     {habits.data.map((habit: Habit, index: number) => (
-                        <Habit key={`${habit.name}-${index}`} habit={habit} />
+                        <Habit
+                            key={`${habit.name}-${index}`}
+                            habit={habit}
+                            weekSelectedOverride={weekSelectedOverride}
+                        />
                     ))}
                 </Header>
             </Box>

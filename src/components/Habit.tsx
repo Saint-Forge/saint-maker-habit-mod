@@ -1,19 +1,20 @@
 import { Box, Flex, Input, IconButton, Wrap, ButtonGroup, Button, Text } from '@chakra-ui/react'
-import { useState, ChangeEventHandler, useRef } from 'react'
+import { useState, ChangeEventHandler, useRef, useEffect } from 'react'
 import { BsPencil, BsArrowLeftCircle, BsArrowRightCircle } from 'react-icons/bs'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 
 import { DAYS_IN_WEEK } from '~constants/habits'
-import { deleteHabit, editHabit, setHabits } from '~slices/habitSlice'
-import { AppDispatch, selectHabits } from '~store'
+import { deleteHabit, editHabit } from '~slices/habitSlice'
+import { AppDispatch } from '~store'
 
 interface HabitProps {
     habit: Habit
+    weekSelectedOverride: number
 }
 
 const weekdays = ['S', 'M', 'T', 'W', 'T', 'F', 'S']
 
-export const Habit = ({ habit }: HabitProps) => {
+export const Habit = ({ habit, weekSelectedOverride }: HabitProps) => {
     const [updatedName, setUpdatedName] = useState('')
     const [weekSelected, setWeekSelected] = useState(3)
     const handleNameUpdate: ChangeEventHandler<HTMLInputElement> = ({ currentTarget: { value } }) =>
@@ -41,6 +42,10 @@ export const Habit = ({ habit }: HabitProps) => {
     const getWeekdayHighlightColor = (habit: Habit, dayIndex: number, currentDay: number) => {
         return habit.days[dayIndex] ? 'green' : !habit.days[dayIndex] && currentDay <= dayIndex ? 'gray' : 'red'
     }
+
+    useEffect(() => {
+        setWeekSelected(weekSelectedOverride)
+    }, [weekSelectedOverride])
 
     return (
         <Box pt="2">
@@ -74,16 +79,16 @@ export const Habit = ({ habit }: HabitProps) => {
                             <Flex justifyContent="end">
                                 <IconButton
                                     onClick={() => weekSelected > 0 && setWeekSelected(weekSelected - 1)}
-                                    aria-label="Add prayer"
+                                    aria-label={`${habit.name}-prev-week`}
                                     icon={<BsArrowLeftCircle />}
-                                    disabled={weekSelected === 0}
+                                    isDisabled={weekSelected === 0}
                                 />
                                 <IconButton
                                     ml="2"
                                     onClick={() => weekSelected < 3 && setWeekSelected(weekSelected + 1)}
-                                    aria-label="Add prayer"
+                                    aria-label={`${habit.name}-next-week`}
                                     icon={<BsArrowRightCircle />}
-                                    disabled={weekSelected === 3}
+                                    isDisabled={weekSelected === 3}
                                 />
                             </Flex>
                         </Flex>
@@ -98,7 +103,9 @@ export const Habit = ({ habit }: HabitProps) => {
                                         key={`${habit.name}-days-${dayIndex}`}
                                         onClick={() => toggleHabitForDay(habit, dayIndex)}
                                         variant={habit.days[dayIndex] ? 'solid' : 'outline'}
-                                        aria-label="Add to friends"
+                                        aria-label={`${value}-${dayIndex}-${
+                                            habit.days[dayIndex] ? 'selected' : 'unselected'
+                                        }-${habit.name}`}
                                         icon={<p>{value}</p>}
                                     />
                                 )

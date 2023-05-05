@@ -21,10 +21,12 @@ V1: Stores 4 weeks of data for unlimited daily habits
 5/2/23
 - create tests for habit editing
 
+5/4/23
+- handle habit editing locally instead of in state 
+
 Backlog
 - ensure that past habit data (when a habit is made) is not marked in red
 - figure out text truncation for habit titles
-- handle habit editing locally instead of in state
 - create global habit controls
 - add weekly habits
 - add counter habits

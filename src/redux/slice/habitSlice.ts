@@ -6,10 +6,18 @@ import { shouldUpdateHabits } from '~utils/habits/shouldUpdateHabits'
 import { sliceGet, sliceAdd, sliceEdit, sliceSet, sliceDeleteSingle } from '~slices/utils/sliceTools'
 
 export const getHabits = createAsyncThunk('habit/getHabits', async () => {
-    let data = (await sliceGet('habits')) as Habit[]
+    let data = (await sliceGet('habits')) as (Habit | LegacyHabit)[]
     if (shouldUpdateHabits()) {
         data = getUpdatedHabits([...data])
-        idb.writeData('habits', data)
+        await idb.writeData('habits', data)
+    }
+    if (data.length > 0 && 'editing' in data[0]) {
+        data = data.map((habit) => ({
+            id: habit.id,
+            name: habit.name,
+            days: habit.days,
+        }))
+        await idb.writeData('habits', data)
     }
     return data
 })

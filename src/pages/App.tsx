@@ -36,7 +36,6 @@ export const App = () => {
                 id: nanoid(16),
                 name: addInputRef.current.value,
                 days: Array(28).fill(false) as boolean[],
-                editing: false,
             }),
         )
         addInputRef.current.value = ''

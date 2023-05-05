@@ -49,11 +49,9 @@ describe('Habit App tests', () => {
         await waitFor(() => expect(screen.getByText('Delete')).toBeInTheDocument())
         const newHabitTitle = 'weightlifting'
         fireEvent.change(screen.getByTestId('habit-title-input'), { target: { value: newHabitTitle } })
-        expect(screen.getByTestId('habit-title-input')).toHaveValue(newHabitTitle)
+        await waitFor(() => expect(screen.getByTestId('habit-title-input')).toHaveValue(newHabitTitle))
         fireEvent.click(screen.getByText('Update'))
-
         await waitFor(() => expect(screen.getByText(newHabitTitle)).toBeInTheDocument())
-        screen.logTestingPlaygroundURL()
     })
 
     it('Can delete habit?', async () => {

@@ -20,33 +20,24 @@ export const Habit = ({ habit }: HabitProps) => {
         setUpdatedName(value)
     const editNameInputRef = useRef<HTMLInputElement | null>(null)
     const dispatch = useDispatch<AppDispatch>()
-    const habits = useSelector(selectHabits)
+    const [isEditing, setIsEditing] = useState(false)
 
     const deleteHabitHandler = (id: string) => {
         dispatch(deleteHabit(id))
     }
     const updateHabitName = (habit: Habit, newHabitName: string) => {
-        if (newHabitName.length === 0) {
-            toggleEditing(habit.id, habit.name)
-            return
-        }
-        dispatch(editHabit({ ...habit, name: newHabitName, editing: false }))
+        if (newHabitName.length === 0) return
+        dispatch(editHabit({ ...habit, name: newHabitName }))
     }
     const toggleHabitForDay = (habit: Habit, dayIndex: number) => {
         const updatedDays = [...habit.days]
         updatedDays[dayIndex] = !updatedDays[dayIndex]
         dispatch(editHabit({ ...habit, days: updatedDays }))
     }
-    const toggleEditing = (id: string, name: string) => {
-        setUpdatedName(name)
-        const updatedHabits = [...habits.data].map((habit: Habit) => {
-            const updatedHabit = { ...habit }
-            updatedHabit.editing = id === habit.id ? !habit.editing : false
-            return updatedHabit
-        })
-        dispatch(setHabits(updatedHabits))
+    const toggleEditing = () => {
+        setUpdatedName(habit.name)
+        setIsEditing(!isEditing)
     }
-
     const getWeekdayHighlightColor = (habit: Habit, dayIndex: number, currentDay: number) => {
         return habit.days[dayIndex] ? 'green' : !habit.days[dayIndex] && currentDay <= dayIndex ? 'gray' : 'red'
     }
@@ -58,7 +49,7 @@ export const Habit = ({ habit }: HabitProps) => {
                     <Box>
                         <Flex direction="row" justifyContent="space-between" pb="2">
                             <Flex justifyContent="start">
-                                {habit.editing ? (
+                                {isEditing ? (
                                     <Input
                                         type="text"
                                         data-testid="habit-title-input"
@@ -74,8 +65,8 @@ export const Habit = ({ habit }: HabitProps) => {
                                 )}
                                 <IconButton
                                     ml="2"
-                                    colorScheme={habit.editing ? 'green' : 'gray'}
-                                    onClick={() => toggleEditing(habit.id, habit.name)}
+                                    colorScheme={isEditing ? 'green' : 'gray'}
+                                    onClick={() => toggleEditing()}
                                     aria-label="Edit Habit"
                                     icon={<BsPencil />}
                                 />
@@ -113,7 +104,7 @@ export const Habit = ({ habit }: HabitProps) => {
                                 )
                             })}
                         </Wrap>
-                        {habit.editing && (
+                        {isEditing && (
                             <ButtonGroup pt="2">
                                 <Button
                                     onClick={() =>

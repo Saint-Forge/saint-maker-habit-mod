@@ -1,5 +1,6 @@
-import { configureStore } from '@reduxjs/toolkit'
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+/* eslint-disable etc/no-commented-out-code */
+import { configureStore, nanoid } from '@reduxjs/toolkit'
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { Provider } from 'react-redux'
 import { BrowserRouter } from 'react-router-dom'
 import { describe, expect, it } from 'vitest'
@@ -7,31 +8,85 @@ import localforage from 'localforage'
 
 import { App } from '~pages/App'
 import { slices } from '~slices/index'
+import { sliceAdd } from '~slices/utils/sliceTools'
 
-const createHabit = async (habitTitle: string) => {
-    expect(screen.getByText('Habits')).toBeInTheDocument()
-    fireEvent.change(screen.getByTestId('new-habit-title-input'), { target: { value: habitTitle } })
-    expect(screen.getByTestId('new-habit-title-input')).toHaveValue(habitTitle)
-    fireEvent.click(screen.getByLabelText('Add Habit'))
-}
+const habitADays = [
+    false,
+    false,
+    false,
+    true,
+    false,
+    false,
+    false,
 
-const populateHabitData = async (habitATitle: string, habitBTitle: string) => {
-    await waitFor(() => fireEvent.click(screen.getByLabelText(`S-21-unselected-${habitATitle}`)))
-    fireEvent.click(screen.getByLabelText(`${habitATitle}-prev-week`))
-    await waitFor(() => fireEvent.click(screen.getByLabelText(`M-15-unselected-${habitATitle}`)))
-    fireEvent.click(screen.getByLabelText(`${habitATitle}-prev-week`))
-    await waitFor(() => fireEvent.click(screen.getByLabelText(`T-9-unselected-${habitATitle}`)))
-    fireEvent.click(screen.getByLabelText(`${habitATitle}-prev-week`))
-    await waitFor(() => fireEvent.click(screen.getByLabelText(`W-3-unselected-${habitATitle}`)))
+    false,
+    false,
+    true,
+    false,
+    false,
+    false,
+    false,
 
-    await waitFor(() => fireEvent.click(screen.getByLabelText(`S-27-unselected-${habitBTitle}`)))
-    fireEvent.click(screen.getByLabelText(`${habitBTitle}-prev-week`))
-    await waitFor(() => fireEvent.click(screen.getByLabelText(`F-19-unselected-${habitBTitle}`)))
-    fireEvent.click(screen.getByLabelText(`${habitBTitle}-prev-week`))
-    await waitFor(() => fireEvent.click(screen.getByLabelText(`T-11-unselected-${habitBTitle}`)))
-    fireEvent.click(screen.getByLabelText(`${habitBTitle}-prev-week`))
-    await waitFor(() => fireEvent.click(screen.getByLabelText(`W-3-unselected-${habitBTitle}`)))
-    fireEvent.click(screen.getByLabelText(`${habitBTitle}-prev-week`))
+    false,
+    true,
+    false,
+    false,
+    false,
+    false,
+    false,
+
+    true,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+]
+
+const habitBDays = [
+    false,
+    false,
+    false,
+    true,
+    false,
+    false,
+    false,
+
+    false,
+    false,
+    false,
+    false,
+    true,
+    false,
+    false,
+
+    false,
+    false,
+    false,
+    false,
+    false,
+    true,
+    false,
+
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    true,
+]
+
+const createHabit = async (habitTitle: string, habitDays: boolean[]) => {
+    await sliceAdd(
+        {
+            id: nanoid(16),
+            name: habitTitle,
+            days: habitDays,
+        },
+        'habits',
+    )
 }
 
 describe('Habit App tests', () => {
@@ -72,18 +127,18 @@ describe('Habit App tests', () => {
         arrangeComponent()
 
         const habitTitle = 'exercise'
-        createHabit(habitTitle)
+        expect(screen.getByText('Habits')).toBeInTheDocument()
+        fireEvent.change(screen.getByTestId('new-habit-title-input'), { target: { value: habitTitle } })
+        expect(screen.getByTestId('new-habit-title-input')).toHaveValue(habitTitle)
+        fireEvent.click(screen.getByLabelText('Add Habit'))
         await waitFor(() => expect(screen.getByText(habitTitle)).toBeInTheDocument())
     })
 
     it('Can edit habit title?', async () => {
+        await act(async () => await createHabit('exercise', habitBDays))
         arrangeComponent()
 
-        const habitTitle = 'exercise'
-        createHabit(habitTitle)
-        await waitFor(() => expect(screen.getByText(habitTitle)).toBeInTheDocument())
-
-        fireEvent.click(screen.getAllByLabelText('Edit Habit')[0])
+        await waitFor(() => fireEvent.click(screen.getAllByLabelText('Edit Habit')[0]))
         await waitFor(() => expect(screen.getByText('Delete')).toBeInTheDocument())
         const newHabitTitle = 'weightlifting'
         fireEvent.change(screen.getByTestId('habit-title-input'), { target: { value: newHabitTitle } })
@@ -93,32 +148,21 @@ describe('Habit App tests', () => {
     })
 
     it('Can delete habit?', async () => {
+        await act(async () => await createHabit('exercise', habitBDays))
         arrangeComponent()
 
-        const habitTitle = 'exercise'
-        createHabit(habitTitle)
-        await waitFor(() => expect(screen.getByText(habitTitle)).toBeInTheDocument())
-
-        fireEvent.click(screen.getAllByLabelText('Edit Habit')[0])
+        await waitFor(() => fireEvent.click(screen.getAllByLabelText('Edit Habit')[0]))
         await waitFor(() => expect(screen.getByText('Delete')).toBeInTheDocument())
         fireEvent.click(screen.getByText('Delete'))
         await waitFor(() => expect(screen.queryByText('exercise')).not.toBeInTheDocument())
     })
 
-    it.only('Global nav changes all habit displayed weeks?', async () => {
-        arrangeComponent()
-
-        // create test habits
+    it('Global nav changes all habit displayed weeks?', async () => {
         const habitATitle = 'exercise'
-        createHabit(habitATitle)
-        await waitFor(() => expect(screen.getByText(habitATitle)).toBeInTheDocument())
-
         const habitBTitle = 'weightlifting'
-        createHabit(habitBTitle)
-        await waitFor(() => expect(screen.getByText(habitBTitle)).toBeInTheDocument())
-
-        // populate habits with unique data
-        await populateHabitData(habitATitle, habitBTitle)
+        await act(async () => await createHabit(habitATitle, habitADays))
+        await act(async () => await createHabit(habitBTitle, habitBDays))
+        arrangeComponent()
 
         // confirm going back onces moves all habits 1 week back
         await waitFor(() => expect(screen.getByText('Current Week')).toBeInTheDocument())

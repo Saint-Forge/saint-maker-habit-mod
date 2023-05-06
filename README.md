@@ -25,6 +25,9 @@ V1: Stores 4 weeks of data for unlimited daily habits
 - handle habit editing locally instead of in state 
 - create global habit controls
 
+5/5/23
+- implement local storage data mocking to simplify testing
+
 Backlog
 - ensure that past habit data (when a habit is made) is not marked in red
 - figure out text truncation for habit titles

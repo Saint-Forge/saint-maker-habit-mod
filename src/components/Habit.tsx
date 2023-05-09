@@ -1,4 +1,5 @@
 import { Box, Flex, Input, IconButton, Wrap, ButtonGroup, Button, Text } from '@chakra-ui/react'
+import { differenceInDays } from 'date-fns'
 import { useState, ChangeEventHandler, useRef, useEffect } from 'react'
 import { BsPencil, BsArrowLeftCircle, BsArrowRightCircle } from 'react-icons/bs'
 import { useDispatch } from 'react-redux'
@@ -22,6 +23,7 @@ export const Habit = ({ habit, weekSelectedOverride }: HabitProps) => {
     const editNameInputRef = useRef<HTMLInputElement | null>(null)
     const dispatch = useDispatch<AppDispatch>()
     const [isEditing, setIsEditing] = useState(false)
+    const daysSinceStartDate = differenceInDays(new Date(), new Date(habit.startDate))
 
     const deleteHabitHandler = (id: string) => {
         dispatch(deleteHabit(id))
@@ -40,7 +42,11 @@ export const Habit = ({ habit, weekSelectedOverride }: HabitProps) => {
         setIsEditing(!isEditing)
     }
     const getWeekdayHighlightColor = (habit: Habit, dayIndex: number, currentDay: number) => {
-        return habit.days[dayIndex] ? 'green' : !habit.days[dayIndex] && currentDay <= dayIndex ? 'gray' : 'red'
+        if (habit.days[dayIndex]) return 'green'
+        const dayHabitWasCreated = 21 - daysSinceStartDate
+        if (dayIndex <= dayHabitWasCreated) return 'gray'
+        if (!habit.days[dayIndex] && currentDay <= dayIndex) return 'gray'
+        return 'red'
     }
 
     useEffect(() => {
@@ -105,7 +111,7 @@ export const Habit = ({ habit, weekSelectedOverride }: HabitProps) => {
                                         variant={habit.days[dayIndex] ? 'solid' : 'outline'}
                                         aria-label={`${value}-${dayIndex}-${
                                             habit.days[dayIndex] ? 'selected' : 'unselected'
-                                        }-${habit.name}`}
+                                        }-${habit.name}-${colorScheme}`}
                                         icon={<p>{value}</p>}
                                     />
                                 )

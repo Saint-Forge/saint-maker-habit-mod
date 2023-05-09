@@ -135,7 +135,7 @@ const inputData: Habit = {
     id: '0',
     name: 'exercise',
     days: defaultData,
-    editing: false,
+    startDate: new Date().toString(),
 }
 
 const getExpectedResult = (expectedData: boolean[]) => {
@@ -143,7 +143,7 @@ const getExpectedResult = (expectedData: boolean[]) => {
         id: '0',
         name: 'exercise',
         days: expectedData,
-        editing: false,
+        startDate: new Date().toString(),
     }
     return expectedResult
 }

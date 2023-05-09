@@ -3,7 +3,7 @@ import { configureStore, nanoid } from '@reduxjs/toolkit'
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { Provider } from 'react-redux'
 import { BrowserRouter } from 'react-router-dom'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import localforage from 'localforage'
 
 import { App } from '~pages/App'
@@ -78,12 +78,13 @@ const habitBDays = [
     true,
 ]
 
-const createHabit = async (habitTitle: string, habitDays: boolean[]) => {
+const createHabit = async (habitTitle: string, habitDays: boolean[], startDate = new Date().toString()) => {
     await sliceAdd(
         {
             id: nanoid(16),
             name: habitTitle,
             days: habitDays,
+            startDate: startDate,
         },
         'habits',
     )
@@ -168,27 +169,71 @@ describe('Habit App tests', () => {
         await waitFor(() => expect(screen.getByText('Current Week')).toBeInTheDocument())
         fireEvent.click(screen.getByLabelText(`habits-prev-week`))
         await waitFor(() => expect(screen.getByText('1 Week ago')).toBeInTheDocument())
-        await waitFor(() => expect(screen.getByLabelText(`M-15-selected-${habitATitle}`)).toBeInTheDocument())
-        await waitFor(() => expect(screen.getByLabelText(`F-19-selected-${habitBTitle}`)).toBeInTheDocument())
+        await waitFor(() => expect(screen.getByLabelText(`M-15-selected-${habitATitle}-green`)).toBeInTheDocument())
+        await waitFor(() => expect(screen.getByLabelText(`F-19-selected-${habitBTitle}-green`)).toBeInTheDocument())
 
         // confirm going back again moves all habits to 2 weeks ago
         fireEvent.click(screen.getByLabelText(`habits-prev-week`))
         await waitFor(() => expect(screen.getByText('2 Weeks ago')).toBeInTheDocument())
-        await waitFor(() => expect(screen.getByLabelText(`T-9-selected-${habitATitle}`)).toBeInTheDocument())
-        await waitFor(() => expect(screen.getByLabelText(`T-11-selected-${habitBTitle}`)).toBeInTheDocument())
+        await waitFor(() => expect(screen.getByLabelText(`T-9-selected-${habitATitle}-green`)).toBeInTheDocument())
+        await waitFor(() => expect(screen.getByLabelText(`T-11-selected-${habitBTitle}-green`)).toBeInTheDocument())
 
         // confirm going back again moves all habits to 3 weeks ago
         fireEvent.click(screen.getByLabelText(`habits-prev-week`))
         await waitFor(() => expect(screen.getByText('3 Weeks ago')).toBeInTheDocument())
-        await waitFor(() => expect(screen.getByLabelText(`W-3-selected-${habitATitle}`)).toBeInTheDocument())
-        await waitFor(() => expect(screen.getByLabelText(`W-3-selected-${habitBTitle}`)).toBeInTheDocument())
+        await waitFor(() => expect(screen.getByLabelText(`W-3-selected-${habitATitle}-green`)).toBeInTheDocument())
+        await waitFor(() => expect(screen.getByLabelText(`W-3-selected-${habitBTitle}-green`)).toBeInTheDocument())
 
         // confirm going forward 3 times moves all habits to the current week
         fireEvent.click(screen.getByLabelText(`habits-next-week`))
         fireEvent.click(screen.getByLabelText(`habits-next-week`))
         fireEvent.click(screen.getByLabelText(`habits-next-week`))
         await waitFor(() => expect(screen.getByText('Current Week')).toBeInTheDocument())
-        await waitFor(() => expect(screen.getByLabelText(`S-21-selected-${habitATitle}`)).toBeInTheDocument())
-        await waitFor(() => expect(screen.getByLabelText(`S-27-selected-${habitBTitle}`)).toBeInTheDocument())
+        await waitFor(() => expect(screen.getByLabelText(`S-21-selected-${habitATitle}-green`)).toBeInTheDocument())
+        await waitFor(() => expect(screen.getByLabelText(`S-27-selected-${habitBTitle}-green`)).toBeInTheDocument())
+    })
+
+    it("New habits don't have past days marked red", async () => {
+        vi.setSystemTime(new Date(Date.UTC(2023, 4, 1)))
+        const habitTitle = 'exercise'
+        await act(
+            async () => await createHabit(habitTitle, Array(28).fill(false), new Date(Date.UTC(2023, 4, 1)).toString()),
+        )
+        arrangeComponent()
+
+        await waitFor(() => expect(screen.getByLabelText(`S-27-unselected-${habitTitle}-gray`)).toBeInTheDocument())
+        await waitFor(() => expect(screen.getByLabelText(`F-26-unselected-${habitTitle}-gray`)).toBeInTheDocument())
+        await waitFor(() => expect(screen.getByLabelText(`T-25-unselected-${habitTitle}-gray`)).toBeInTheDocument())
+        await waitFor(() => expect(screen.getByLabelText(`W-24-unselected-${habitTitle}-gray`)).toBeInTheDocument())
+        await waitFor(() => expect(screen.getByLabelText(`T-23-unselected-${habitTitle}-gray`)).toBeInTheDocument())
+        await waitFor(() => expect(screen.getByLabelText(`M-22-unselected-${habitTitle}-gray`)).toBeInTheDocument())
+        await waitFor(() => expect(screen.getByLabelText(`S-21-unselected-${habitTitle}-gray`)).toBeInTheDocument())
+        fireEvent.click(screen.getByLabelText(`habits-prev-week`))
+
+        await waitFor(() => expect(screen.getByLabelText(`S-20-unselected-${habitTitle}-gray`)).toBeInTheDocument())
+        await waitFor(() => expect(screen.getByLabelText(`F-19-unselected-${habitTitle}-gray`)).toBeInTheDocument())
+        await waitFor(() => expect(screen.getByLabelText(`T-18-unselected-${habitTitle}-gray`)).toBeInTheDocument())
+        await waitFor(() => expect(screen.getByLabelText(`W-17-unselected-${habitTitle}-gray`)).toBeInTheDocument())
+        await waitFor(() => expect(screen.getByLabelText(`T-16-unselected-${habitTitle}-gray`)).toBeInTheDocument())
+        await waitFor(() => expect(screen.getByLabelText(`M-15-unselected-${habitTitle}-gray`)).toBeInTheDocument())
+        await waitFor(() => expect(screen.getByLabelText(`S-14-unselected-${habitTitle}-gray`)).toBeInTheDocument())
+        fireEvent.click(screen.getByLabelText(`habits-prev-week`))
+
+        await waitFor(() => expect(screen.getByLabelText(`S-13-unselected-${habitTitle}-gray`)).toBeInTheDocument())
+        await waitFor(() => expect(screen.getByLabelText(`F-12-unselected-${habitTitle}-gray`)).toBeInTheDocument())
+        await waitFor(() => expect(screen.getByLabelText(`T-11-unselected-${habitTitle}-gray`)).toBeInTheDocument())
+        await waitFor(() => expect(screen.getByLabelText(`W-10-unselected-${habitTitle}-gray`)).toBeInTheDocument())
+        await waitFor(() => expect(screen.getByLabelText(`T-9-unselected-${habitTitle}-gray`)).toBeInTheDocument())
+        await waitFor(() => expect(screen.getByLabelText(`M-8-unselected-${habitTitle}-gray`)).toBeInTheDocument())
+        await waitFor(() => expect(screen.getByLabelText(`S-7-unselected-${habitTitle}-gray`)).toBeInTheDocument())
+        fireEvent.click(screen.getByLabelText(`habits-prev-week`))
+
+        await waitFor(() => expect(screen.getByLabelText(`S-6-unselected-${habitTitle}-gray`)).toBeInTheDocument())
+        await waitFor(() => expect(screen.getByLabelText(`F-5-unselected-${habitTitle}-gray`)).toBeInTheDocument())
+        await waitFor(() => expect(screen.getByLabelText(`T-4-unselected-${habitTitle}-gray`)).toBeInTheDocument())
+        await waitFor(() => expect(screen.getByLabelText(`W-3-unselected-${habitTitle}-gray`)).toBeInTheDocument())
+        await waitFor(() => expect(screen.getByLabelText(`T-2-unselected-${habitTitle}-gray`)).toBeInTheDocument())
+        await waitFor(() => expect(screen.getByLabelText(`M-1-unselected-${habitTitle}-gray`)).toBeInTheDocument())
+        await waitFor(() => expect(screen.getByLabelText(`S-0-unselected-${habitTitle}-gray`)).toBeInTheDocument())
     })
 })

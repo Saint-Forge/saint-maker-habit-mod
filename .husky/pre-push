@@ -5,4 +5,4 @@ yarn coverage
 yarn unimported
 yarn lint
 yarn folderslint
-yarn dry-test
+yarn dry

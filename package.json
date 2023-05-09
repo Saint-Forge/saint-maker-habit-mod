@@ -15,8 +15,8 @@
     "lint": "eslint . --ext .ts,.tsx --fix",
     "folderslint": "folderslint",
     "prepare": "husky install",
-    "dry-test": "jscpd ./src --threshold=0",
-    "generate-dry-report": "jscpd ./src --reporters=html"
+    "dry": "jscpd ./src --ignore='**/*.test.tsx' --threshold=0",
+    "dryr": "yarn dry --reporters=html && open ./report/html/index.html"
   },
   "dependencies": {
     "@chakra-ui/react": "^2.2.1",

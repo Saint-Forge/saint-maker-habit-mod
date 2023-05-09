@@ -30,9 +30,9 @@ V1: Stores 4 weeks of data for unlimited daily habits
 
 5/8/23
 - ensure that past habit data (when a habit is made) is not marked in red
+- figure out text truncation for habit titles
 
 Backlog
-- figure out text truncation for habit titles
 - add weekly habits
 - add counter habits
 

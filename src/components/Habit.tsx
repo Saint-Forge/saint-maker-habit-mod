@@ -58,7 +58,7 @@ export const Habit = ({ habit, weekSelectedOverride }: HabitProps) => {
             <Box borderWidth="1px" borderRadius="lg" overflow="hidden" py="2">
                 <Flex direction="column" alignItems="center">
                     <Box>
-                        <Flex direction="row" justifyContent="space-between" pb="2">
+                        <Flex direction="row" justifyContent="space-between" pb="2" maxW="328px">
                             <Flex justifyContent="start">
                                 {isEditing ? (
                                     <Input
@@ -74,16 +74,18 @@ export const Habit = ({ habit, weekSelectedOverride }: HabitProps) => {
                                         {habit.name}
                                     </Text>
                                 )}
-                                <IconButton
-                                    ml="2"
-                                    colorScheme={isEditing ? 'green' : 'gray'}
-                                    onClick={() => toggleEditing()}
-                                    aria-label="Edit Habit"
-                                    icon={<BsPencil />}
-                                />
                             </Flex>
                             <Flex justifyContent="end">
+                                {!isEditing && (
+                                    <IconButton
+                                        colorScheme={isEditing ? 'green' : 'gray'}
+                                        onClick={() => toggleEditing()}
+                                        aria-label="Edit Habit"
+                                        icon={<BsPencil />}
+                                    />
+                                )}
                                 <IconButton
+                                    ml="2"
                                     onClick={() => weekSelected > 0 && setWeekSelected(weekSelected - 1)}
                                     aria-label={`${habit.name}-prev-week`}
                                     icon={<BsArrowLeftCircle />}
@@ -119,6 +121,9 @@ export const Habit = ({ habit, weekSelectedOverride }: HabitProps) => {
                         </Wrap>
                         {isEditing && (
                             <ButtonGroup pt="2">
+                                <Button onClick={() => setIsEditing(false)} variant="outline">
+                                    Cancel
+                                </Button>
                                 <Button
                                     onClick={() =>
                                         updateHabitName(

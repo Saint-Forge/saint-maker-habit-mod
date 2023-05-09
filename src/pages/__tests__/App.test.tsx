@@ -140,7 +140,7 @@ describe('Habit App tests', () => {
         arrangeComponent()
 
         await waitFor(() => fireEvent.click(screen.getAllByLabelText('Edit Habit')[0]))
-        await waitFor(() => expect(screen.getByText('Delete')).toBeInTheDocument())
+        await waitFor(() => expect(screen.getByText('Update')).toBeInTheDocument())
         const newHabitTitle = 'weightlifting'
         fireEvent.change(screen.getByTestId('habit-title-input'), { target: { value: newHabitTitle } })
         await waitFor(() => expect(screen.getByTestId('habit-title-input')).toHaveValue(newHabitTitle))

@@ -1,66 +1,69 @@
 import { Box, Flex, Input, IconButton, Wrap, ButtonGroup, Button, Text } from '@chakra-ui/react'
-import { useState, ChangeEventHandler, useRef } from 'react'
+import { differenceInDays } from 'date-fns'
+import { useState, ChangeEventHandler, useRef, useEffect } from 'react'
 import { BsPencil, BsArrowLeftCircle, BsArrowRightCircle } from 'react-icons/bs'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 
 import { DAYS_IN_WEEK } from '~constants/habits'
-import { deleteHabit, editHabit, setHabits } from '~slices/habitSlice'
-import { AppDispatch, selectHabits } from '~store'
+import { deleteHabit, editHabit } from '~slices/habitSlice'
+import { AppDispatch } from '~store'
 
 interface HabitProps {
     habit: Habit
+    weekSelectedOverride: number
 }
 
 const weekdays = ['S', 'M', 'T', 'W', 'T', 'F', 'S']
 
-export const Habit = ({ habit }: HabitProps) => {
+export const Habit = ({ habit, weekSelectedOverride }: HabitProps) => {
     const [updatedName, setUpdatedName] = useState('')
     const [weekSelected, setWeekSelected] = useState(3)
     const handleNameUpdate: ChangeEventHandler<HTMLInputElement> = ({ currentTarget: { value } }) =>
         setUpdatedName(value)
     const editNameInputRef = useRef<HTMLInputElement | null>(null)
     const dispatch = useDispatch<AppDispatch>()
-    const habits = useSelector(selectHabits)
+    const [isEditing, setIsEditing] = useState(false)
+    const daysSinceStartDate = differenceInDays(new Date(), new Date(habit.startDate))
 
     const deleteHabitHandler = (id: string) => {
         dispatch(deleteHabit(id))
     }
     const updateHabitName = (habit: Habit, newHabitName: string) => {
-        if (newHabitName.length === 0) {
-            toggleEditing(habit.id, habit.name)
-            return
-        }
-        dispatch(editHabit({ ...habit, name: newHabitName, editing: false }))
+        if (newHabitName.length === 0) return
+        dispatch(editHabit({ ...habit, name: newHabitName }))
     }
     const toggleHabitForDay = (habit: Habit, dayIndex: number) => {
         const updatedDays = [...habit.days]
         updatedDays[dayIndex] = !updatedDays[dayIndex]
         dispatch(editHabit({ ...habit, days: updatedDays }))
     }
-    const toggleEditing = (id: string, name: string) => {
-        setUpdatedName(name)
-        const updatedHabits = [...habits.data].map((habit: Habit) => {
-            const updatedHabit = { ...habit }
-            updatedHabit.editing = id === habit.id ? !habit.editing : false
-            return updatedHabit
-        })
-        dispatch(setHabits(updatedHabits))
+    const toggleEditing = () => {
+        setUpdatedName(habit.name)
+        setIsEditing(!isEditing)
+    }
+    const getWeekdayHighlightColor = (habit: Habit, dayIndex: number, currentDay: number) => {
+        if (habit.days[dayIndex]) return 'green'
+        const dayHabitWasCreated = 21 - daysSinceStartDate
+        if (dayIndex <= dayHabitWasCreated) return 'gray'
+        if (!habit.days[dayIndex] && currentDay <= dayIndex) return 'gray'
+        return 'red'
     }
 
-    const getWeekdayHighlightColor = (habit: Habit, dayIndex: number, currentDay: number) => {
-        return habit.days[dayIndex] ? 'green' : !habit.days[dayIndex] && currentDay <= dayIndex ? 'gray' : 'red'
-    }
+    useEffect(() => {
+        setWeekSelected(weekSelectedOverride)
+    }, [weekSelectedOverride])
 
     return (
         <Box pt="2">
             <Box borderWidth="1px" borderRadius="lg" overflow="hidden" py="2">
                 <Flex direction="column" alignItems="center">
                     <Box>
-                        <Flex direction="row" justifyContent="space-between" pb="2">
+                        <Flex direction="row" justifyContent="space-between" pb="2" maxW="328px">
                             <Flex justifyContent="start">
-                                {habit.editing ? (
+                                {isEditing ? (
                                     <Input
                                         type="text"
+                                        data-testid="habit-title-input"
                                         placeholder="Edit habits current name"
                                         value={updatedName}
                                         onChange={handleNameUpdate}
@@ -71,27 +74,29 @@ export const Habit = ({ habit }: HabitProps) => {
                                         {habit.name}
                                     </Text>
                                 )}
-                                <IconButton
-                                    ml="2"
-                                    colorScheme={habit.editing ? 'green' : 'gray'}
-                                    onClick={() => toggleEditing(habit.id, habit.name)}
-                                    aria-label="Add prayer"
-                                    icon={<BsPencil />}
-                                />
                             </Flex>
                             <Flex justifyContent="end">
+                                {!isEditing && (
+                                    <IconButton
+                                        colorScheme={isEditing ? 'green' : 'gray'}
+                                        onClick={() => toggleEditing()}
+                                        aria-label="Edit Habit"
+                                        icon={<BsPencil />}
+                                    />
+                                )}
                                 <IconButton
+                                    ml="2"
                                     onClick={() => weekSelected > 0 && setWeekSelected(weekSelected - 1)}
-                                    aria-label="Add prayer"
+                                    aria-label={`${habit.name}-prev-week`}
                                     icon={<BsArrowLeftCircle />}
-                                    disabled={weekSelected === 0}
+                                    isDisabled={weekSelected === 0}
                                 />
                                 <IconButton
                                     ml="2"
                                     onClick={() => weekSelected < 3 && setWeekSelected(weekSelected + 1)}
-                                    aria-label="Add prayer"
+                                    aria-label={`${habit.name}-next-week`}
                                     icon={<BsArrowRightCircle />}
-                                    disabled={weekSelected === 3}
+                                    isDisabled={weekSelected === 3}
                                 />
                             </Flex>
                         </Flex>
@@ -106,14 +111,19 @@ export const Habit = ({ habit }: HabitProps) => {
                                         key={`${habit.name}-days-${dayIndex}`}
                                         onClick={() => toggleHabitForDay(habit, dayIndex)}
                                         variant={habit.days[dayIndex] ? 'solid' : 'outline'}
-                                        aria-label="Add to friends"
+                                        aria-label={`${value}-${dayIndex}-${
+                                            habit.days[dayIndex] ? 'selected' : 'unselected'
+                                        }-${habit.name}-${colorScheme}`}
                                         icon={<p>{value}</p>}
                                     />
                                 )
                             })}
                         </Wrap>
-                        {habit.editing && (
+                        {isEditing && (
                             <ButtonGroup pt="2">
+                                <Button onClick={() => setIsEditing(false)} variant="outline">
+                                    Cancel
+                                </Button>
                                 <Button
                                     onClick={() =>
                                         updateHabitName(

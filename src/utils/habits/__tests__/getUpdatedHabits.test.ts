@@ -18,7 +18,7 @@ describe('getUpdatedHabits', () => {
             id: '123',
             name: 'exercise',
             days: Array(28).fill(false),
-            editing: false,
+            startDate: new Date().toString(),
         }
         spyPopulateMissingWeeksForHabit.mockImplementationOnce(() => habit)
 

@@ -7,16 +7,17 @@ import { sliceGet, sliceAdd, sliceEdit, sliceSet, sliceDeleteSingle } from '~sli
 
 export const getHabits = createAsyncThunk('habit/getHabits', async () => {
     let data = (await sliceGet('habits')) as (Habit | LegacyHabit)[]
-    if (shouldUpdateHabits()) {
-        data = getUpdatedHabits([...data])
-        await idb.writeData('habits', data)
-    }
     if (data.length > 0 && 'editing' in data[0]) {
         data = data.map((habit) => ({
             id: habit.id,
             name: habit.name,
             days: habit.days,
+            startDate: new Date().toString(),
         }))
+        await idb.writeData('habits', data)
+    }
+    if (shouldUpdateHabits()) {
+        data = getUpdatedHabits([...(data as Habit[])])
         await idb.writeData('habits', data)
     }
     return data

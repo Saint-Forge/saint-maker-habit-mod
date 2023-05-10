@@ -1,4 +1,4 @@
-interface LegacyHabit {
+interface LegacyHabitV1 {
   id: string
   name: string
   days: boolean[]

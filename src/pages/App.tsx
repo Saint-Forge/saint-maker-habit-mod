@@ -38,7 +38,7 @@ export const App = () => {
                 id: nanoid(16),
                 name: addInputRef.current.value,
                 days: Array(28).fill(false) as boolean[],
-                startDate: new Date().toString(),
+                startDate: new Date(new Date().setHours(0, 0, 0)).toString(),
             }),
         )
         addInputRef.current.value = ''

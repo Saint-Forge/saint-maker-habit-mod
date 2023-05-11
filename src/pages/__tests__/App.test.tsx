@@ -90,6 +90,43 @@ const createHabit = async (habitTitle: string, habitDays: boolean[], startDate =
     )
 }
 
+const allHabitDaysAreGray = async (habitTitle: string) => {
+    await waitFor(() => expect(screen.getByLabelText(`S-27-unselected-${habitTitle}-gray`)).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByLabelText(`F-26-unselected-${habitTitle}-gray`)).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByLabelText(`T-25-unselected-${habitTitle}-gray`)).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByLabelText(`W-24-unselected-${habitTitle}-gray`)).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByLabelText(`T-23-unselected-${habitTitle}-gray`)).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByLabelText(`M-22-unselected-${habitTitle}-gray`)).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByLabelText(`S-21-unselected-${habitTitle}-gray`)).toBeInTheDocument())
+    fireEvent.click(screen.getByLabelText(`habits-prev-week`))
+
+    await waitFor(() => expect(screen.getByLabelText(`S-20-unselected-${habitTitle}-gray`)).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByLabelText(`F-19-unselected-${habitTitle}-gray`)).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByLabelText(`T-18-unselected-${habitTitle}-gray`)).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByLabelText(`W-17-unselected-${habitTitle}-gray`)).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByLabelText(`T-16-unselected-${habitTitle}-gray`)).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByLabelText(`M-15-unselected-${habitTitle}-gray`)).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByLabelText(`S-14-unselected-${habitTitle}-gray`)).toBeInTheDocument())
+    fireEvent.click(screen.getByLabelText(`habits-prev-week`))
+
+    await waitFor(() => expect(screen.getByLabelText(`S-13-unselected-${habitTitle}-gray`)).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByLabelText(`F-12-unselected-${habitTitle}-gray`)).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByLabelText(`T-11-unselected-${habitTitle}-gray`)).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByLabelText(`W-10-unselected-${habitTitle}-gray`)).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByLabelText(`T-9-unselected-${habitTitle}-gray`)).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByLabelText(`M-8-unselected-${habitTitle}-gray`)).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByLabelText(`S-7-unselected-${habitTitle}-gray`)).toBeInTheDocument())
+    fireEvent.click(screen.getByLabelText(`habits-prev-week`))
+
+    await waitFor(() => expect(screen.getByLabelText(`S-6-unselected-${habitTitle}-gray`)).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByLabelText(`F-5-unselected-${habitTitle}-gray`)).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByLabelText(`T-4-unselected-${habitTitle}-gray`)).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByLabelText(`W-3-unselected-${habitTitle}-gray`)).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByLabelText(`T-2-unselected-${habitTitle}-gray`)).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByLabelText(`M-1-unselected-${habitTitle}-gray`)).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByLabelText(`S-0-unselected-${habitTitle}-gray`)).toBeInTheDocument())
+}
+
 describe('Habit App tests', () => {
     const storeRef = setupTestStore()
 
@@ -193,12 +230,47 @@ describe('Habit App tests', () => {
         await waitFor(() => expect(screen.getByLabelText(`S-27-selected-${habitBTitle}-green`)).toBeInTheDocument())
     })
 
-    it("New habits don't have past days marked red", async () => {
-        vi.setSystemTime(new Date(Date.UTC(2023, 4, 1)))
+    it('New habits have days before habit begins marked gray', async () => {
+        vi.setSystemTime(new Date(Date.UTC(2023, 4, 1, 0, 0, 0)))
         const habitTitle = 'exercise'
         await act(
-            async () => await createHabit(habitTitle, Array(28).fill(false), new Date(Date.UTC(2023, 4, 1)).toString()),
+            async () =>
+                await createHabit(
+                    habitTitle,
+                    Array(28).fill(false),
+                    new Date(Date.UTC(2023, 4, 1, 0, 0, 0)).toString(),
+                ),
         )
+        arrangeComponent()
+
+        await allHabitDaysAreGray(habitTitle)
+    })
+
+    it('New habits with odd start times have days before habit begins marked gray', async () => {
+        vi.setSystemTime(new Date(Date.UTC(2023, 4, 7, 19, 0, 0)))
+        arrangeComponent()
+
+        const habitTitle = 'exercise'
+        expect(screen.getByText('Habits')).toBeInTheDocument()
+        fireEvent.change(screen.getByTestId('new-habit-title-input'), { target: { value: habitTitle } })
+        expect(screen.getByTestId('new-habit-title-input')).toHaveValue(habitTitle)
+        fireEvent.click(screen.getByLabelText('Add Habit'))
+        await waitFor(() => expect(screen.getByText(habitTitle)).toBeInTheDocument())
+
+        await allHabitDaysAreGray(habitTitle)
+    })
+
+    it('Week old habits only have a week of days marked in red', async () => {
+        const habitTitle = 'exercise'
+        await act(
+            async () =>
+                await createHabit(
+                    habitTitle,
+                    Array(28).fill(false),
+                    new Date(Date.UTC(2023, 4, 1, 0, 0, 0)).toString(),
+                ),
+        )
+        vi.setSystemTime(new Date(Date.UTC(2023, 4, 8, 0, 0, 0)))
         arrangeComponent()
 
         await waitFor(() => expect(screen.getByLabelText(`S-27-unselected-${habitTitle}-gray`)).toBeInTheDocument())
@@ -207,15 +279,15 @@ describe('Habit App tests', () => {
         await waitFor(() => expect(screen.getByLabelText(`W-24-unselected-${habitTitle}-gray`)).toBeInTheDocument())
         await waitFor(() => expect(screen.getByLabelText(`T-23-unselected-${habitTitle}-gray`)).toBeInTheDocument())
         await waitFor(() => expect(screen.getByLabelText(`M-22-unselected-${habitTitle}-gray`)).toBeInTheDocument())
-        await waitFor(() => expect(screen.getByLabelText(`S-21-unselected-${habitTitle}-gray`)).toBeInTheDocument())
+        await waitFor(() => expect(screen.getByLabelText(`S-21-unselected-${habitTitle}-red`)).toBeInTheDocument())
         fireEvent.click(screen.getByLabelText(`habits-prev-week`))
 
-        await waitFor(() => expect(screen.getByLabelText(`S-20-unselected-${habitTitle}-gray`)).toBeInTheDocument())
-        await waitFor(() => expect(screen.getByLabelText(`F-19-unselected-${habitTitle}-gray`)).toBeInTheDocument())
-        await waitFor(() => expect(screen.getByLabelText(`T-18-unselected-${habitTitle}-gray`)).toBeInTheDocument())
-        await waitFor(() => expect(screen.getByLabelText(`W-17-unselected-${habitTitle}-gray`)).toBeInTheDocument())
-        await waitFor(() => expect(screen.getByLabelText(`T-16-unselected-${habitTitle}-gray`)).toBeInTheDocument())
-        await waitFor(() => expect(screen.getByLabelText(`M-15-unselected-${habitTitle}-gray`)).toBeInTheDocument())
+        await waitFor(() => expect(screen.getByLabelText(`S-20-unselected-${habitTitle}-red`)).toBeInTheDocument())
+        await waitFor(() => expect(screen.getByLabelText(`F-19-unselected-${habitTitle}-red`)).toBeInTheDocument())
+        await waitFor(() => expect(screen.getByLabelText(`T-18-unselected-${habitTitle}-red`)).toBeInTheDocument())
+        await waitFor(() => expect(screen.getByLabelText(`W-17-unselected-${habitTitle}-red`)).toBeInTheDocument())
+        await waitFor(() => expect(screen.getByLabelText(`T-16-unselected-${habitTitle}-red`)).toBeInTheDocument())
+        await waitFor(() => expect(screen.getByLabelText(`M-15-unselected-${habitTitle}-red`)).toBeInTheDocument())
         await waitFor(() => expect(screen.getByLabelText(`S-14-unselected-${habitTitle}-gray`)).toBeInTheDocument())
         fireEvent.click(screen.getByLabelText(`habits-prev-week`))
 
